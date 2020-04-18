@@ -134,28 +134,30 @@ contract DBlogger {
     function editPost(
         uint256 postID,
         string calldata _title,
-        string calldata _body
+        string calldata _body,
+        string calldata _image
     ) external onlyAuthorOrAbove {
-        require(posts[postID].isValue == false, "Post does not");
+        require(posts[postID].isValue, "Post does not exist");
         Post memory post = posts[postID];
-        User memory author = users[post.author];
+        User memory sender = users[msg.sender];
         require(
-            !(post.author == msg.sender || author.role != Role.Author),
+            (post.author == msg.sender || sender.role != Role.Author),
             "Only Author of the post or an Editor/Admin can edit posts"
         );
         posts[postID].title = _title;
         posts[postID].body = _body;
+        posts[postID].image = _image;
     }
 
     function editPostImage(uint256 postID, string calldata _image)
         external
         onlyAuthorOrAbove
     {
-        require(posts[postID].isValue == false, "Post does not");
+        require(posts[postID].isValue, "Post does not exist");
         Post memory post = posts[postID];
-        User memory author = users[post.author];
+        User memory sender = users[msg.sender];
         require(
-            !(post.author == msg.sender || author.role != Role.Author),
+            (post.author == msg.sender || sender.role != Role.Author),
             "Only Author of the post or an Editor/Admin can edit posts"
         );
         posts[postID].image = _image;
@@ -187,6 +189,13 @@ contract DBlogger {
     /************* Delete Operations ***********/
 
     function deletePost(uint256 postID) external onlyAuthorOrAbove {
+        require(posts[postID].isValue, "Post does not exist");
+        Post memory post = posts[postID];
+        User memory sender = users[msg.sender];
+        require(
+            (post.author == msg.sender || sender.role != Role.Author),
+            "Only Author of the post or an Editor/Admin can edit posts"
+        );
         delete posts[postID];
         uint256 index = postIndexs.length;
         for (uint256 i = 0; i < postIndexs.length - 1; i++) {

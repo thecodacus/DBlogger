@@ -138,10 +138,9 @@ contract DBlogger {
         string calldata _image
     ) external onlyAuthorOrAbove {
         require(posts[postID].isValue, "Post does not exist");
-        Post memory post = posts[postID];
-        User memory sender = users[msg.sender];
         require(
-            (post.author == msg.sender || sender.role != Role.Author),
+            (posts[postID].author == msg.sender ||
+                users[msg.sender].role != Role.Author),
             "Only Author of the post or an Editor/Admin can edit posts"
         );
         posts[postID].title = _title;
@@ -154,10 +153,9 @@ contract DBlogger {
         onlyAuthorOrAbove
     {
         require(posts[postID].isValue, "Post does not exist");
-        Post memory post = posts[postID];
-        User memory sender = users[msg.sender];
         require(
-            (post.author == msg.sender || sender.role != Role.Author),
+            (posts[postID].author == msg.sender ||
+                users[msg.sender].role != Role.Author),
             "Only Author of the post or an Editor/Admin can edit posts"
         );
         posts[postID].image = _image;

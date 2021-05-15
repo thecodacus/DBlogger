@@ -1,4 +1,4 @@
-pragma solidity >=0.4.21 <0.7.0;
+pragma solidity >=0.4.22 <0.9.0;
 pragma experimental ABIEncoderV2;
 
 
@@ -11,17 +11,14 @@ contract DBlogger {
         bool isValue;
         address id;
         string name;
-        string bio;
+        string profile_hash;
         Role role;
-        string avatar;
     }
 
     struct Post {
         bool isValue;
-        string title;
-        string body;
         address author;
-        string image;
+        string content_hash;
     }
 
     uint256 internal newPostCounter;
@@ -38,9 +35,8 @@ contract DBlogger {
             isValue: true,
             id: msg.sender,
             name: "Admin",
-            bio: "",
-            role: Role.Admin,
-            avatar: ""
+            profile_hash: "",
+            role: Role.Admin
         });
     }
 
@@ -93,23 +89,19 @@ contract DBlogger {
     /************* Insert Operations ***********/
 
     function addPost(
-        string calldata _title,
-        string calldata _body,
-        string calldata _image
+        string calldata _content_hash
     ) external onlyAuthorOrAbove returns (uint256 postID) {
         postID = newPostCounter++; // campaignID is return variable
         // Creates new struct and saves in storage. We leave out the mapping type.
         postIndexs.push(postID);
         posts[postID] = Post({
             isValue: true,
-            title: _title,
-            body: _body,
             author: users[msg.sender].id,
-            image: _image
+            content_hash:_content_hash
         });
     }
 
-    function registerUser(string calldata _name, string calldata _bio)
+    function registerUser(string calldata _name, string calldata _profile_hash)
         external
         onlyGuest
     {
@@ -118,9 +110,8 @@ contract DBlogger {
             isValue: true,
             id: msg.sender,
             name: _name,
-            bio: _bio,
-            role: Role.Subscriber,
-            avatar: ""
+            profile_hash: _profile_hash,
+            role: Role.Subscriber
         });
     }
 
@@ -133,9 +124,7 @@ contract DBlogger {
 
     function editPost(
         uint256 postID,
-        string calldata _title,
-        string calldata _body,
-        string calldata _image
+        string calldata _content_hash
     ) external onlyAuthorOrAbove {
         require(posts[postID].isValue, "Post does not exist");
         require(
@@ -143,34 +132,15 @@ contract DBlogger {
                 users[msg.sender].role != Role.Author),
             "Only Author of the post or an Editor/Admin can edit posts"
         );
-        posts[postID].title = _title;
-        posts[postID].body = _body;
-        posts[postID].image = _image;
+        posts[postID].content_hash = _content_hash;
     }
 
-    function editPostImage(uint256 postID, string calldata _image)
-        external
-        onlyAuthorOrAbove
-    {
-        require(posts[postID].isValue, "Post does not exist");
-        require(
-            (posts[postID].author == msg.sender ||
-                users[msg.sender].role != Role.Author),
-            "Only Author of the post or an Editor/Admin can edit posts"
-        );
-        posts[postID].image = _image;
-    }
-
-    function editUser(string calldata _name, string calldata _bio)
+    function editUser(string calldata _name, string calldata _profile_hash)
         external
         onlyUserOrAbove
     {
         users[msg.sender].name = _name;
-        users[msg.sender].bio = _bio;
-    }
-
-    function editUseravatar(string calldata _avatar) external onlyUserOrAbove {
-        users[msg.sender].avatar = _avatar;
+        users[msg.sender].profile_hash = _profile_hash;
     }
 
     function editUserRole(address id, Role _role) external onlyAdmin {
@@ -195,17 +165,17 @@ contract DBlogger {
             "Only Author of the post or an Editor/Admin can edit posts"
         );
         delete posts[postID];
-        uint256 index = postIndexs.length;
-        for (uint256 i = 0; i < postIndexs.length - 1; i++) {
-            if (postIndexs[i] == postID) index = i;
-            if (index < postIndexs.length - 1) {
-                postIndexs[i] = postIndexs[i + 1];
-            }
-        }
-        if (index < postIndexs.length) {
-            delete postIndexs[postIndexs.length - 1];
-        }
-        postIndexs.pop();
+        // uint256 index = postIndexs.length;
+        // for (uint256 i = 0; i < postIndexs.length - 1; i++) {
+        //     if (postIndexs[i] == postID) index = i;
+        //     if (index < postIndexs.length - 1) {
+        //         postIndexs[i] = postIndexs[i + 1];
+        //     }
+        // }
+        // if (index < postIndexs.length) {
+        //     delete postIndexs[postIndexs.length - 1];
+        // }
+        // postIndexs.pop();
     }
 
     function deleteUser(address id) public {
@@ -222,17 +192,17 @@ contract DBlogger {
         User memory user = users[id];
         require(user.isValue, "user does not exist");
         delete users[id];
-        uint256 index = userIndexs.length;
-        for (uint256 i = 0; i < userIndexs.length - 1; i++) {
-            if (userIndexs[i] == id) index = i;
-            if (index < postIndexs.length - 1) {
-                userIndexs[i] = userIndexs[i + 1];
-            }
-        }
-        if (index < userIndexs.length) {
-            delete userIndexs[userIndexs.length - 1];
-        }
-        userIndexs.pop();
+        // uint256 index = userIndexs.length;
+        // for (uint256 i = 0; i < userIndexs.length - 1; i++) {
+        //     if (userIndexs[i] == id) index = i;
+        //     if (index < postIndexs.length - 1) {
+        //         userIndexs[i] = userIndexs[i + 1];
+        //     }
+        // }
+        // if (index < userIndexs.length) {
+        //     delete userIndexs[userIndexs.length - 1];
+        // }
+        // userIndexs.pop();
     }
 
     /************* View Operations ***********/

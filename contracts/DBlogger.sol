@@ -38,6 +38,7 @@ contract DBlogger {
             profile_hash: "",
             role: Role.Admin
         });
+        newPostCounter=0;
     }
 
     /**************************** Modifiers ****************************/
@@ -113,6 +114,7 @@ contract DBlogger {
             profile_hash: _profile_hash,
             role: Role.Subscriber
         });
+        
     }
 
     function makeAdmin(address id) external onlyAdmin {
@@ -165,6 +167,7 @@ contract DBlogger {
             "Only Author of the post or an Editor/Admin can edit posts"
         );
         delete posts[postID];
+
         // uint256 index = postIndexs.length;
         // for (uint256 i = 0; i < postIndexs.length - 1; i++) {
         //     if (postIndexs[i] == postID) index = i;
@@ -176,6 +179,7 @@ contract DBlogger {
         //     delete postIndexs[postIndexs.length - 1];
         // }
         // postIndexs.pop();
+        
     }
 
     function deleteUser(address id) public {
@@ -207,12 +211,13 @@ contract DBlogger {
 
     /************* View Operations ***********/
     function getMyProfile() public view returns (User memory user) {
-        require(users[msg.sender].isValue, "User not registered");
+        require(users[msg.sender].isValue, "User not registered with the contract");
         user = users[msg.sender];
         return user;
     }
 
     function getUser(address id) public view returns (User memory) {
+        require(users[id].isValue, "User not registered with the contract");
         return (users[id]);
     }
 
@@ -233,11 +238,11 @@ contract DBlogger {
         view
         returns (Post[] memory, uint256[] memory)
     {
-        Post[] memory postList = new Post[](postIndexs.length);
+        Post[] memory postList= new Post[](postIndexs.length);
         uint256[] memory Ids = new uint256[](postIndexs.length);
         for (uint256 i = 0; i < postIndexs.length; i++) {
-            postList[i] = posts[postIndexs[i]];
-            Ids[i] = postIndexs[i];
+                postList[i]=posts[postIndexs[i]];
+                Ids[i] = postIndexs[i];
         }
         return (postList, Ids);
     }
